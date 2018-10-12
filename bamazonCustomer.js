@@ -1,3 +1,14 @@
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+require("console.table");
+
+var connection = mysql.createConnection({
+  host: "localhost",
+  port: 8889,
+  user: "root",
+  password: "root",
+  database: "bamazon"
+});
 
 // Creates the connection with the server and loads the product data upon a successful connection
 connection.connect(function(err) {
@@ -87,8 +98,8 @@ function promptCustomerForQuantity(product) {
 // Purchase the desired quantity of the desired item
 function makePurchase(product, quantity) {
   connection.query(
-    "UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?",
-    [quantity, product.item_id],
+    "UPDATE products SET stock_quantity = stock_quantity - ?, product_sales = product_sales + ? WHERE item_id = ?",
+    [quantity, product.price * quantity, product.item_id],
     function(err, res) {
       // Let the user know the purchase was successful, re-run loadProducts
       console.log("\nSuccessfully purchased " + quantity + " " + product.product_name + "'s!");
