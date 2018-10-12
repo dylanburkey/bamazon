@@ -13,7 +13,6 @@ const connection = mysql.createConnection({
 
 
 // Create connection and load data
-
 connection.connect(function (err) {
   if (err) {
     console.error("error connecting: " + err.stack);
@@ -27,7 +26,6 @@ connection.connect(function (err) {
 function loadProducts() {
   connection.query("SELECT * FROM products", function (err, res) {
     if (err) throw err;
-
     console.table(res);
 
     promptCustomerForItem(res);
@@ -36,9 +34,7 @@ function loadProducts() {
 
 
 // Get product id from user
-
 function promptCustomerForItem(inventory) {
-  // Prompts user for what they would like to purchase
   inquirer
     .prompt([{
       type: "input",
@@ -49,17 +45,14 @@ function promptCustomerForItem(inventory) {
       }
     }])
     .then(function (val) {
-      // Check if the user wants to quit the program
       checkIfShouldExit(val.choice);
       var choiceId = parseInt(val.choice);
       var product = checkInventory(choiceId, inventory);
-
-      // If there is a product with the id the user chose, prompt the customer for a desired quantity
       if (product) {
-        // Pass the chosen product to promptCustomerForQuantity
+    
         promptCustomerForQuantity(product);
       } else {
-        // Otherwise let them know the item is not in the inventory, re-run loadProducts
+      
         console.log("\nThat item is not in the inventory.");
         loadProducts();
       }
@@ -78,19 +71,43 @@ function promptCustomerForQuantity(product) {
       }
     }])
     .then(function (val) {
-      // Check if the user wants to quit the program
       checkIfShouldExit(val.quantity);
       var quantity = parseInt(val.quantity);
 
-      // If there isn't enough of the chosen product and quantity, let the user know and re-run loadProducts
       if (quantity > product.stock_quantity) {
-        console.log("\nInsufficient quantity!");
-        loadProducts();
-      } else {
-        // Otherwise run makePurchase, give it the product information and desired quantity to purchase
+        console.log("\nInsufficient quantity!"); purchase
         makePurchase(product, quantity);
       }
     });
+}
+
+
+function makePurchase(product, quantity) {
+  connection.query(
+    "UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?",
+    [quantity, product.item_id],
+    function (err, res) {
+      console.log("\nSuccessfully purchased " + quantity + " " + product.product_name + "'s!");
+      loadProducts();
+    }
+  );
+}
+
+
+function checkInventory(choiceId, inventory) {
+  for (var i = 0; i < inventory.length; i++) {
+    if (inventory[i].item_id === choiceId) {
+      return inventory[i];
+    }
+  }
+  return null;
+}
+
+function checkIfShouldExit(choice) {
+  if (choice.toLowerCase() === "q") {
+    console.log("Goodbye!");
+    process.exit(0);
+  }
 }
 
 
