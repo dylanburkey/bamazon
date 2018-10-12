@@ -3,12 +3,13 @@ const inquirer = require("inquirer");
 require("console.table");
 
 
-const connection = mysql.createConnection({
+var connection = mysql.createConnection({
   host: "localhost",
-  port: 3306,
+  port: 8889,
   user: "root",
   password: "root",
-  database: "bamazon"
+  database: "bamazon",
+  socketPath: 'localhost:/Applications/MAMP/tmp/mysql/mysql.sock'
 });
 
 
